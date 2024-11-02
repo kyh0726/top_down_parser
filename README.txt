@@ -53,17 +53,19 @@
     if 수정해서 기존의 input값이 바뀌는 경우
         if 바뀌어도 올바른 CFG 안됨
             기존의 input값 출력
+            error 메시지 출력
 
         elif 바뀌어서 올바른 CFG됨
             수정된 input값 출력
-
+            warning 메시지 출력
+        
         elif 바뀌어서 올바른 CFG가 되는데, 선언되지 않은 변수 오류 뜨면?
             바뀐 input값 출력 
-            (그런데 Error Message만 뜨게 해뒀는데, 여기서 Warning Message도 출력을 해줘야 할 것 같은데 왜냐하면 추가한 input값을 보여줘야 하기 때문에 
-            => 이 부분은 교수님께 여쭤봐야 할 것 같아서 바뀔 수도 있음, 근데 출력 부분만 살짝 바뀌는거라 큰 상관은 없음 )
+            error, warning 모두 출력 ( 왜냐면 warning 메시지를 통해 뭐가 바뀌었는지 보여줘야 함 )
 
     elif input값 안바뀌면
         기존의 input값 출력
+        ok 메시지 출력
 
     
 

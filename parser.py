@@ -179,7 +179,7 @@ def parse_factor():
         value = symbol_table.get(token_string, "Undefined")
         if value == "Undefined":
             error_messages.append(f"(Error) 정의되지 않은 변수({token_string})가 참조됨")
-            error_type.append("UNDEFINED_ID")
+            error_type.append("UNDEFINED_ID_ERROR")
             symbol_table[token_string] = "Unknown"
             value = "Unknown"
         lexical()
@@ -224,6 +224,8 @@ def handle_warning(warning_type):
 # 사용 예시
 def print_result():
     # 세미콜론을 만날 때마다 토큰 개수를 출력
+
+
     global tokens, modified_sliced_tokens, original_sliced_tokens, previous_index, index, error_type
     
     modified_sliced_tokens = tokens[previous_index: index]
@@ -231,35 +233,52 @@ def print_result():
     modified_input = " ".join(modified_sliced_tokens)
     original_input = " ".join(original_sliced_tokens)
 
-    if error_messages or original_input == modified_input:
-        if set(error_type) == {"UNDEFINED_ID"}: # 그니까 UNDEFINED이고 문법에 맞지 않는데, 문법은 수정을 통해 해결된 경우
+    def print_error_and_warning():
+        for message in warning_messages:
+            print(message)
+        for message in error_messages:
+            print(message)
+        
+    def print_error():
+        for message in error_messages:
+            print(message)
+
+    def print_warning():
+        for message in warning_messages:
+            print(message)
+
+    def print_no_error_and_warning():
+        print("(OK)")
+
+
+
+    if error_messages:
+        
+        if set(error_type) == {"UNDEFINED_ID_ERROR"}: # 그니까 UNDEFINED이고 문법에 맞지 않는데, 문법은 수정을 통해 해결된 경우
             print(f"수정된 input 값 : {modified_input}")
             id_count, const_count, op_count = count_tokens(modified_sliced_tokens)
             print(f"ID: {id_count}; CONST: {const_count}; OPERATOR: {op_count};")
+            print_error_and_warning()
 
         else: # 문법을 수정을 통해 해결할 수 없는 경우
             print(f"원래 input 값 : {original_input}")
             id_count, const_count, op_count = count_tokens(original_sliced_tokens)
             print(f"ID: {id_count}; CONST: {const_count}; OPERATOR: {op_count};")
+            print_error()
 
-    else: # 문법을 수정을 통해 해결할 수 있고 오류는 발생하지 않는 경우
+    elif warning_messages: # 문법을 수정을 통해 해결할 수 있고 오류는 발생하지 않는 경우
         print(f"수정된 input 값 : {modified_input}")
         id_count, const_count, op_count = count_tokens(modified_sliced_tokens)
         print(f"ID: {id_count}; CONST: {const_count}; OPERATOR: {op_count};")
+        print_warning()
 
-    
+    else: # 아무 문제 없음
+        print(f"원래 input 값 : {original_input}")
+        id_count, const_count, op_count = count_tokens(original_sliced_tokens)
+        print(f"ID: {id_count}; CONST: {const_count}; OPERATOR: {op_count};")
+        print_no_error_and_warning()
 
-
-    # Warning 메시지 출력
-    if error_messages:
-        for message in error_messages:
-            print(message)
-    elif warning_messages:
-        for message in warning_messages:
-            print(message)
-    else:
-        print("(OK)")
-
+    print()
     original_sliced_tokens.clear()
     warning_messages.clear()
     error_messages.clear()

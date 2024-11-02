@@ -1,2 +1,2 @@
-operand2 := operand1 + ; 
+operand2 := operand1 op ; 
 target := operand1 + operand2 *

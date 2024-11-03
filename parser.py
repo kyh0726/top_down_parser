@@ -4,7 +4,6 @@ import sys
 # 전역 변수 선언
 next_token = None
 token_string = ""
-warning_occur_num = 0 # 에러가 발생한 수만큼 저장 ( 여러 개의 WARNING 처리하는 상황에서 여러 개의 토큰 값이 삭제되는 경우, 인덱스 값 제대로 표시 위함 )
 symbol_table = {}  # 변수 저장소 (변수 이름: 값)
 warning_messages = []  # 여러 경고 메시지를 저장하는 리스트
 error_messages = [] # 여러 에러 메시지를 저장하는 리스트
@@ -51,8 +50,7 @@ def lexical():
         elif RIGHT_PAREN.fullmatch(token_string):
             next_token = "RIGHT_PAREN"
         else:
-            warning_messages.append(f"(Warning) 정의되지 않은 토큰 '{token_string}'을(를) 삭제합니다.")
-            tokens.pop(index)
+            handle_warning("UNDEFINED_TOKEN")
             continue
         index += 1
         break
@@ -178,18 +176,14 @@ def parse_factor():
     elif next_token == "ID":
         value = symbol_table.get(token_string, "Undefined")
         if value == "Undefined":
-            error_messages.append(f"(Error) 정의되지 않은 변수({token_string})가 참조됨")
-            error_type.append("UNDEFINED_ID_ERROR")
-            symbol_table[token_string] = "Unknown"
+            handle_error("UNDEFINED_ID_ERROR")
             value = "Unknown"
         lexical()
     elif next_token == "CONST":
         value = int(token_string)
         lexical()
     elif next_token == "SEMI_COLON" or next_token == None:
-        # '(' 'ID' 'CONST' 세 값 중에 하나도 안나왔는데 문장이 끝났다거나, 그 뒤에 토큰이 없는 경우는 치명적인 오류로 간주한다.
-        error_messages.append(f"(Error) 추가나 삭제를 통해 오류를 수정할 수 없음")
-        error_type.append("INSOLUBLE_ERROR")
+        handle_error("INSOLUBLE_ERROR")# '(' 'ID' 'CONST' 세 값 중에 하나도 안나왔는데 문장이 끝났다거나, 그 뒤에 토큰이 없는 경우는 치명적인 오류로 간주한다.
         value = "Unknown"
         return value
     else:
@@ -221,6 +215,20 @@ def handle_warning(warning_type):
             tokens.pop(index - 1)
             index -= 1
             lexical() 
+        case "UNDEFINED_TOKEN":
+            warning_messages.append(f"(Warning) 정의되지 않은 토큰 '{token_string}'을(를) 삭제합니다.")
+            tokens.pop(index)
+
+def handle_error(param_error_type):
+    match param_error_type:
+        case "UNDEFINED_ID_ERROR":
+            error_messages.append(f"(Error) 정의되지 않은 변수({token_string})가 참조됨")
+            error_type.append("UNDEFINED_ID_ERROR")
+            symbol_table[token_string] = "Unknown"
+        case "INSOLUBLE_ERROR":
+            error_messages.append(f"(Error) 추가나 삭제를 통해 오류를 수정할 수 없음")
+            error_type.append("INSOLUBLE_ERROR")
+
 # 사용 예시
 def print_result():
     # 세미콜론을 만날 때마다 토큰 개수를 출력
@@ -253,7 +261,7 @@ def print_result():
 
 
     if error_messages:
-        
+
         if set(error_type) == {"UNDEFINED_ID_ERROR"}: # 그니까 UNDEFINED이고 문법에 맞지 않는데, 문법은 수정을 통해 해결된 경우
             print(f"수정된 input 값 : {modified_input}")
             id_count, const_count, op_count = count_tokens(modified_sliced_tokens)

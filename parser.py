@@ -28,7 +28,6 @@ previous_index = 0
 # lexical() 함수 - 정의되지 않은 토큰 무시
 def lexical():
     global next_token, token_string, index, warning_messages, original_sliced_tokens
-
     while index < len(tokens):
         token_string = tokens[index]
         # print(f'전체 토큰 리스트 : {tokens}, 전체 토큰 수 : {len(tokens)} 현재 토큰 값 : {tokens[index]}, 인덱스 : {index}')
@@ -145,7 +144,6 @@ def parse_expression():
 
 def parse_term():
     value = parse_factor()
-
     # factor_tail 생성자 부분
     while next_token == "MULT_OP":
         op = token_string
@@ -165,7 +163,7 @@ def parse_term():
     return value
 
 def parse_factor():
-    global error_messsages, error_type
+    global error_type
     if next_token == "LEFT_PAREN":
         lexical()
         value = parse_expression()
@@ -196,10 +194,12 @@ def handle_warning(warning_type):
     global next_token, original_sliced_tokens, index, warning_messages
     match warning_type:
         case "ADD_RIGHT_PAREN": # ')' 괄호 넣어주는 방식으로 처리
-            warning_messages.append(f"(Warning) ')' 괄호가 생략되었습니다. 토큰 '{tokens[index - 2]}' 의 오른쪽 옆에 ')'을 추가합니다.")
-            tokens.insert(index - 1, ')')
-            original_sliced_tokens.pop()
+            warning_messages.append(f"(Warning) ')' 괄호가 생략되었습니다. 토큰 '{tokens[index - 1]}' 의 오른쪽 옆에 ')'을 추가합니다.")
+            tokens.insert(index, ')')
+            index += 1
             lexical()
+
+
         case "MISSING_OPERAND": # '다음 토큰 값들을 계속 빼주면서 ID나 CONST 값을 찾아주는 방식으로 처리'
             warning_messages.append(f"(Warning) 적절하지 못한 토큰 '{tokens[index-1]}'을(를) 삭제했습니다.")
             tokens.pop(index - 1)

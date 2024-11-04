@@ -1,3 +1,0 @@
-1 operand1 % ; 
-operand2 operand1 + 1 
-target := operand1 + operand2 * 3 * 1 * 2 

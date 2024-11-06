@@ -157,6 +157,7 @@ def parse_term():
             else:
                 if factor_value == 0: # 0으로 나눈 경우
                     value = "Unknown"
+                    handle_error("DIVISION_BY_ZERO_ERROR")
                 else:
                     value = value // factor_value
 
@@ -199,7 +200,6 @@ def handle_warning(warning_type):
             index += 1
             lexical()
 
-
         case "MISSING_OPERAND": # '다음 토큰 값들을 계속 빼주면서 ID나 CONST 값을 찾아주는 방식으로 처리'
             warning_messages.append(f"(Warning) 적절하지 못한 토큰 '{tokens[index-1]}'을(를) 삭제했습니다.")
             tokens.pop(index - 1)
@@ -228,7 +228,9 @@ def handle_error(param_error_type):
         case "INSOLUBLE_ERROR":
             error_messages.append(f"(Error) 추가나 삭제를 통해 오류를 수정할 수 없음")
             error_type.append("INSOLUBLE_ERROR")
-
+        case "DIVISION_BY_ZERO_ERROR":
+            error_messages.append(f"(Error) 0으로 나누는 에러가 발생했습니다. 해당 값은 Unknown으로 할당됩니다.")
+            error_type.append("DIVISION_BY_ZERO_ERROR")
 # 사용 예시
 def print_result():
     # 세미콜론을 만날 때마다 토큰 개수를 출력
@@ -262,17 +264,24 @@ def print_result():
 
     if error_messages:
 
-        if set(error_type) == {"UNDEFINED_ID_ERROR"}: # 그니까 UNDEFINED이고 문법에 맞지 않는데, 문법은 수정을 통해 해결된 경우
-            print(f"수정된 input 값 : {modified_input}")
-            id_count, const_count, op_count = count_tokens(modified_sliced_tokens)
-            print(f"ID: {id_count}; CONST: {const_count}; OPERATOR: {op_count};")
-            print_error_and_warning()
-
-        else: # 문법을 수정을 통해 해결할 수 없는 경우
+        if ("INSOLUBLE_ERROR" in error_type): # 문법을 수정을 통해 해결할 수 없는 경우
             print(f"원래 input 값 : {original_input}")
             id_count, const_count, op_count = count_tokens(original_sliced_tokens)
             print(f"ID: {id_count}; CONST: {const_count}; OPERATOR: {op_count};")
             print_error()
+
+        elif warning_messages: # ZERO_DIVISION이나 UNDEFINED인 에러에는 걸리는데, 문법은 수정을 통해 해결된 경우
+            print(f"수정된 input 값 : {modified_input}")
+            id_count, const_count, op_count = count_tokens(modified_sliced_tokens)
+            print(f"ID: {id_count}; CONST: {const_count}; OPERATOR: {op_count};")
+            print_error_and_warning()
+        
+        else: # ZERO_DIVISION이나 UNDEFINED인 에러에만 걸리고, 수정은 이뤄지지 않은 경우
+            print(f"원래 input 값 : {original_input}")
+            id_count, const_count, op_count = count_tokens(modified_sliced_tokens)
+            print(f"ID: {id_count}; CONST: {const_count}; OPERATOR: {op_count};")
+            print_error_and_warning()
+                    
 
     elif warning_messages: # 문법을 수정을 통해 해결할 수 있고 오류는 발생하지 않는 경우
         print(f"수정된 input 값 : {modified_input}")
